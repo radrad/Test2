@@ -1,0 +1,352 @@
+diff --git a/samples/Plugin.Maui.Audio.Sample/Pages/MyLibraryPage.xaml b/samples/Plugin.Maui.Audio.Sample/Pages/MyLibraryPage.xaml
+index 874c033..8534542 100644
+--- a/samples/Plugin.Maui.Audio.Sample/Pages/MyLibraryPage.xaml
++++ b/samples/Plugin.Maui.Audio.Sample/Pages/MyLibraryPage.xaml
+@@ -1,66 +1,98 @@
+ ﻿<?xml version="1.0" encoding="utf-8" ?>
+ <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+-			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+-			 xmlns:viewmodels="clr-namespace:Plugin.Maui.Audio.Sample.ViewModels"
+-			 x:Class="Plugin.Maui.Audio.Sample.Pages.MyLibraryPage"
+-			 Title="My Library"
+-			 x:Name="Page"
+-			 x:DataType="viewmodels:MyLibraryPageViewModel">
++             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
++             xmlns:viewmodels="clr-namespace:Plugin.Maui.Audio.Sample.ViewModels"
++             xmlns:converters="clr-namespace:Plugin.Maui.Audio.Sample.Converters"
++             x:Class="Plugin.Maui.Audio.Sample.Pages.MyLibraryPage"
++             Title="My Library"
++             x:Name="Page"
++             x:DataType="viewmodels:MyLibraryPageViewModel">
+ 
+ 	<ContentPage.Resources>
+-		<Style x:Key="border_gallery_card"
+-			   TargetType="Border">
+-			<Setter Property="Stroke"
+-					Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray950}}" />
+-			<Setter Property="BackgroundColor"
+-					Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray950}}" />
+-			<Setter Property="Padding"
+-					Value="16" />
+-			<Setter Property="StrokeThickness"
+-					Value="1" />
+-			<Setter Property="StrokeShape"
+-					Value="RoundRectangle 8" />
++		<Style x:Key="border_gallery_card" TargetType="Border">
++			<Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray950}}" />
++			<Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray950}}" />
++			<Setter Property="Padding" Value="16" />
++			<Setter Property="StrokeThickness" Value="1" />
++			<Setter Property="StrokeShape" Value="RoundRectangle 8" />
+ 		</Style>
+-	</ContentPage.Resources>
+-
+-	<Grid RowDefinitions="60,*">
+ 
+-		<Button Text="Create Recording"
+-				HorizontalOptions="End"
+-				Margin="10"
+-				Command="{Binding AddRecordingCommand}" />
++		<converters:FolderFileIconConverter x:Key="FolderFileIconConverter" />
++		<converters:FolderFileFontAttributeConverter x:Key="FolderFileFontAttributeConverter" />
++		<converters:ExpandCollapseConverter x:Key="ExpandCollapseConverter" />
+ 
+-		<CollectionView ItemsSource="{Binding Music}"
+-						Grid.Row="1"
+-						SelectionMode="Single">
+-			<CollectionView.ItemTemplate>
+-				<DataTemplate x:DataType="viewmodels:MusicItemViewModel">
+-					<Border Style="{StaticResource border_gallery_card}">
+-						<Border.GestureRecognizers>
+-							<TapGestureRecognizer Command="{Binding Path=BindingContext.OpenMusicCommand, Source={x:Reference Page}}"
+-												  CommandParameter="{Binding .}" />
+-						</Border.GestureRecognizers>
+-						<Grid ColumnDefinitions="75,*"
+-							  InputTransparent="True"
+-							  RowDefinitions="3*,2*"
+-							  ColumnSpacing="8">
+-							<!-- Placeholder for imagery -->
+-							<Image BackgroundColor="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray950}}"
+-								   Grid.RowSpan="2" />
++		<!-- Font attributes as resources -->
++		<FontAttributes x:Key="BoldFontAttribute">Bold</FontAttributes>
++		<FontAttributes x:Key="NoneFontAttribute">None</FontAttributes>
+ 
+-							<Label Text="{Binding Title}"
+-								   FontSize="32"
+-								   FontAttributes="Bold"
+-								   Grid.Column="1" />
++		<!-- Icons -->
++		<FontImageSource x:Key="PersonIcon" Glyph="&#xf007;" FontFamily="FontAwesome" Size="20" />
++		<FontImageSource x:Key="FolderIcon" Glyph="&#xf07b;" FontFamily="FontAwesome" Size="20" />
++		<FontImageSource x:Key="FileIcon" Glyph="&#xf15b;" FontFamily="FontAwesome" Size="20" />
++		<FontImageSource x:Key="ExpandIcon" Glyph="&#xf067;" FontFamily="FontAwesome" Size="20" />
++		<FontImageSource x:Key="CollapseIcon" Glyph="&#xf068;" FontFamily="FontAwesome" Size="20" />
++	</ContentPage.Resources>
+ 
+-							<Label Text="{Binding Artist}"
+-								   FontSize="20"
+-								   Grid.Column="1"
+-								   Grid.Row="1" />
++	<ScrollView>
++		<Grid RowDefinitions="60,*,150">
++		<Grid ColumnDefinitions="*,Auto">
++			<Entry x:Name="PatientIdEntry" Placeholder="Enter Patient ID" Grid.Column="0" />
++			<Button Text="Create Recording" Grid.Column="1" Command="{Binding AddRecordingCommand}" />
++		</Grid>
++			<CollectionView x:Name="FilesCollectionView" ItemsSource="{Binding Patients}" SelectionMode="Single" Grid.Row="1">
++			<CollectionView.ItemTemplate>
++				<DataTemplate>
++					<StackLayout>
++						<Grid ColumnDefinitions="Auto, *, Auto">
++							<Image Source="{StaticResource PersonIcon}" VerticalOptions="Center" />
++							<Label Text="{Binding Name}" FontAttributes="Bold" VerticalOptions="Center" />
++							<ImageButton Source="{Binding IsExpanded, Converter={StaticResource ExpandCollapseConverter}}" Command="{Binding Path=BindingContext.OpenMusicCommand, Source={x:Reference Page}}" CommandParameter="{Binding .}" />
+ 						</Grid>
+-					</Border>
++							<CollectionView ItemsSource="{Binding Visits}" IsVisible="{Binding IsExpanded}" SelectionMode="Single">
++							<CollectionView.ItemTemplate>
++								<DataTemplate>
++									<StackLayout Padding="20,0,0,0">
++										<Grid ColumnDefinitions="Auto, *, Auto">
++											<Image Source="{Binding IsFolder, Converter={StaticResource FolderFileIconConverter}}" VerticalOptions="Center" />
++											<Label Text="{Binding Name}" FontAttributes="{Binding IsFolder, Converter={StaticResource FolderFileFontAttributeConverter}}" VerticalOptions="Center" />
++											<ImageButton Source="{Binding IsExpanded, Converter={StaticResource ExpandCollapseConverter}}" Command="{Binding Path=BindingContext.OpenMusicCommand, Source={x:Reference Page}}" CommandParameter="{Binding .}" />
++										</Grid>
++										<CollectionView ItemsSource="{Binding Children}" IsVisible="{Binding IsExpanded}" SelectionMode="Single">
++											<CollectionView.ItemTemplate>
++												<DataTemplate>
++													<StackLayout Padding="20,0,0,0">
++														<Border Style="{StaticResource border_gallery_card}">
++															<Border.GestureRecognizers>
++																<TapGestureRecognizer Command="{Binding Path=BindingContext.OpenMusicCommand, Source={x:Reference Page}}" CommandParameter="{Binding .}" />
++															</Border.GestureRecognizers>
++															<Label Text="{Binding Name}" />
++														</Border>
++													</StackLayout>
++												</DataTemplate>
++											</CollectionView.ItemTemplate>
++										</CollectionView>
++									</StackLayout>
++								</DataTemplate>
++							</CollectionView.ItemTemplate>
++						</CollectionView>
++					</StackLayout>
+ 				</DataTemplate>
+ 			</CollectionView.ItemTemplate>
+ 		</CollectionView>
++
++		<!-- Patient Details Section -->
++		<StackLayout Grid.Row="2" Padding="10">
++			<Label Text="Patient Details" FontAttributes="Bold" FontSize="Medium" />
++			<Image Source="{Binding SelectedPatient.PictureUrl}" HeightRequest="100" WidthRequest="100" />
++			<Label Text="Name: " />
++			<Label Text="{Binding SelectedPatient.Name}" />
++			<Label Text="Health Card Number: " />
++			<Label Text="{Binding SelectedPatient.HealthCardNumber}" />
++			<Label Text="Last Visit: " />
++			<Label Text="{Binding SelectedPatient.LastVisitDateTime}" />
++			<Label Text="Length of Visit: " />
++			<Label Text="{Binding SelectedPatient.LengthOfVisit}" />
++		</StackLayout>
+ 	</Grid>
++	</ScrollView>
+ </ContentPage>
+diff --git a/samples/Plugin.Maui.Audio.Sample/ViewModels/MyLibraryPageViewModel.cs b/samples/Plugin.Maui.Audio.Sample/ViewModels/MyLibraryPageViewModel.cs
+index e4b267d..346105b 100644
+--- a/samples/Plugin.Maui.Audio.Sample/ViewModels/MyLibraryPageViewModel.cs
++++ b/samples/Plugin.Maui.Audio.Sample/ViewModels/MyLibraryPageViewModel.cs
+@@ -1,38 +1,173 @@
+ ﻿using System.Collections.ObjectModel;
+ 
+ namespace Plugin.Maui.Audio.Sample.ViewModels;
+-
+ public class MyLibraryPageViewModel : BaseViewModel
+ {
+-	public Command AddRecordingCommand { get; }
+-	public Command OpenMusicCommand { get; }
+-	public ObservableCollection<MusicItemViewModel> Music { get; }
++    public Command AddRecordingCommand { get; }
++    public Command<FolderItem> OpenMusicCommand { get; }
++
++    ObservableCollection<Patient> patients;
++    Patient selectedPatient;
++
++    public ObservableCollection<Patient> Patients
++    {
++	    get => patients;
++	    set
++	    {
++		    patients = value;
++		    NotifyPropertyChanged();
++	    }
++    }
++    public Patient SelectedPatient
++    {
++        get => selectedPatient;
++        set
++        {
++            selectedPatient = value;
++            NotifyPropertyChanged();
++        }
++    }
++
++    public MyLibraryPageViewModel()
++    {
++         Patients = new ObservableCollection<Patient>
++         {
++            new Patient
++            {
++                PatientId = "100",
++                Name = "John Doe",
++                HealthCardNumber = "1234-5678",
++                PictureUrl = "patient1.jpg",
++                LastVisitDateTime = DateTime.Now.AddDays(-1),
++                LengthOfVisit = "30 minutes",
++                Visits = new ObservableCollection<FolderItem>
++                {
++                    new FolderItem
++                    {
++                        Name = "2023-09-22",
++                        IsFolder = true,
++                        Children = new ObservableCollection<FolderItem>
++                        {
++                            new FolderItem
++                            {
++                                Name = "100_2023-09-22_10-30-00.mp3",
++                                IsFolder = false
++                            },
++                            new FolderItem
++                            {
++                                Name = "100_2023-09-22_11-00-00.mp3",
++                                IsFolder = false
++                            }
++                        }
++                    },
++                    new FolderItem { Name = "2023-09-21", IsFolder = true },
++                    new FolderItem { Name = "2023-09-20", IsFolder = true },
++                    new FolderItem { Name = "2023-09-19", IsFolder = true },
++                    new FolderItem { Name = "2023-09-18", IsFolder = true }
++                }
++            },
++            new Patient
++            {
++                PatientId = "101",
++                Name = "Jane Smith",
++                HealthCardNumber = "8765-4321",
++                PictureUrl = "patient2.jpg",
++                LastVisitDateTime = DateTime.Now.AddDays(-2),
++                LengthOfVisit = "45 minutes",
++                Visits = new ObservableCollection<FolderItem>
++                {
++                    new FolderItem { Name = "2023-09-21", IsFolder = true }
++                }
++            },
++            new Patient
++            {
++                PatientId = "102",
++                Name = "Alice Johnson",
++                HealthCardNumber = "5678-1234",
++                PictureUrl = "patient3.jpg",
++                LastVisitDateTime = DateTime.Now.AddDays(-3),
++                LengthOfVisit = "25 minutes",
++                Visits = new ObservableCollection<FolderItem>
++                {
++                    new FolderItem { Name = "2023-09-20", IsFolder = true },
++                    new FolderItem { Name = "2023-09-19", IsFolder = true }
++                }
++            }
++        };
++
++        AddRecordingCommand = new Command(async () => await AddRecording());
++        OpenMusicCommand = new Command<FolderItem>(async (item) => await OnMusicItemSelected(item));
++    }
++
++    static async Task AddRecording()
++    {
++        await Shell.Current.GoToAsync("AudioRecorderPage");
++    }
+ 
++    static async Task OnMusicItemSelected(FolderItem item)
++    {
++        if (item.IsFolder)
++        {
++            item.IsExpanded = !item.IsExpanded;
++        }
++        else
++        {
++            await Shell.Current.GoToAsync(
++                "MusicPlayerPage",
++                new Dictionary<string, object>
++                {
++                    ["Music"] = item
++                });
++        }
++    }
++}
+ 
+-	public MyLibraryPageViewModel()
++public class Patient : BaseViewModel
++{
++	bool isExpanded;
++	public string PatientId { get; set; }
++	public string Name { get; set; }
++	public string PictureUrl { get; set; }
++	public string HealthCardNumber { get; set; }
++	public DateTime LastVisitDateTime { get; set; }
++	public string LengthOfVisit { get; set; }
++	public ObservableCollection<FolderItem> Visits { get; set; }
++
++	public bool IsExpanded
+ 	{
+-		Music = new ObservableCollection<MusicItemViewModel>
++		get => isExpanded;
++		set
+ 		{
+-			new MusicItemViewModel("The Happy Ukelele Song", "Stanislav Fomin", "ukelele.mp3")
+-		};
++			isExpanded = value;
++			NotifyPropertyChanged();
++		}
++	}
+ 
+-		AddRecordingCommand = new Command(async () => await AddRecording());
+-		OpenMusicCommand = new Command(async (object item) => await OnMusicItemSelected((MusicItemViewModel)item));
++	public Patient()
++	{
++		Visits = new ObservableCollection<FolderItem>();
+ 	}
++}
+ 
++public class FolderItem : BaseViewModel
++{
++	bool isExpanded;
+ 
+-	async Task AddRecording()
++	public string Name { get; set; }
++	public bool IsFolder { get; set; }
++	public ObservableCollection<FolderItem> Children { get; set; }
++	public bool IsExpanded
+ 	{
+-		await Shell.Current.GoToAsync(Routes.AudioRecorder.RouteName);
++		get => isExpanded;
++		set
++		{
++			isExpanded = value;
++			NotifyPropertyChanged();
++		}
+ 	}
+ 
+-	async Task OnMusicItemSelected(MusicItemViewModel musicItem)
++	public FolderItem()
+ 	{
+-		await Shell.Current.GoToAsync(
+-			Routes.MusicPlayer.RouteName,
+-			new Dictionary<string, object>
+-			{
+-				[Routes.MusicPlayer.Arguments.Music] = musicItem
+-			});
++		Children = new ObservableCollection<FolderItem>();
+ 	}
+ }
+\ No newline at end of file
